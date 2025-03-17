@@ -1,15 +1,19 @@
 using UnityEngine;
+using TMPro;
 
 public class PlayerController : MonoBehaviour
 {
     
     public string playerID;
     public GameObject playerIDText;
+    public TextMeshProUGUI playerIDUI;
+    public GameObject playerImage;
 
-    public void Initialize(string id)
+    public void Initialize(string id, Color color)
     {
         playerID = id;
-        playerIDText.GetComponent<TextMesh>().text = playerID;
+        playerImage.GetComponent<SpriteRenderer>().color = color;
+        playerIDUI.text = playerID;
     }
 
     public float speed = 5f;

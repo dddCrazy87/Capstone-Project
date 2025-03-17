@@ -8,6 +8,7 @@ public class GameManager : MonoBehaviour
 
     public GameObject playerPrefab;
     public Transform[] spawnPoints; // 預先設定好的出生點
+    public float playerSpawnSpacing = 1.5f;
     public List<Team> teams = new List<Team>();
 
     private bool gameStarted = false;
@@ -15,8 +16,17 @@ public class GameManager : MonoBehaviour
     void Awake()
     {
         if (Instance == null)
+        {
             Instance = this;
+            DontDestroyOnLoad(gameObject); // 避免場景切換時被刪除
+        }
+        else
+        {
+            Destroy(gameObject); // 刪除重複的 GameManager
+            return;
+        }
     }
+
 
     void Start()
     {
@@ -54,15 +64,28 @@ public class GameManager : MonoBehaviour
         foreach (var team in teams)
         {
             Color teamColor = Random.ColorHSV(); // 給該隊伍隨機顏色
-            foreach (var playerID in team.players)
+            int playerCount = team.players.Count;
+
+            for (int i = 0; i < playerCount; i++)
             {
-                GameObject player = Instantiate(playerPrefab, team.spawnPoint.position, Quaternion.identity);
-                player.GetComponent<SpriteRenderer>().color = teamColor;
-                player.GetComponent<PlayerController>().Initialize(playerID);
+                // 計算玩家的生成位置 (圓形排列)
+                Vector2 offset = GetCircularOffset(i, playerCount);
+                Vector3 spawnPos = team.spawnPoint.position + new Vector3(offset.x, offset.y, 0);
+
+                GameObject player = Instantiate(playerPrefab, spawnPos, Quaternion.identity);
+                player.GetComponent<PlayerController>().Initialize(team.players[i], teamColor);
             }
         }
     }
+
+    private Vector2 GetCircularOffset(int index, int total)
+    {
+        float angle = (index / (float)total) * Mathf.PI * 2; // 均勻分布角度
+        return new Vector2(Mathf.Cos(angle), Mathf.Sin(angle)) * playerSpawnSpacing;
+    }
 }
+
+
 
 // 定義隊伍資料結構
 [System.Serializable]
